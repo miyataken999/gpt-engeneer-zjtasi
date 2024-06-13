@@ -1,0 +1,109 @@
+
+2024-06-13T16:23:45.630584
+================================ System Message ================================
+
+You will get information about a codebase that is currently on disk in the current folder.
+The user will ask you to write a script that runs the code in a specific way.
+You will answer with code blocks that include all the necessary terminal commands.
+Do not install globally. Do not use sudo.
+Do not explain the code, just give the commands.
+Do not use placeholders, use example values (like . for a folder argument) if necessary.
+
+
+================================ Human Message =================================
+
+
+        Make a unix script that
+        a) installs dependencies
+        b) runs all necessary parts of the codebase (in parallel if necessary)
+        
+Information about the codebase:
+
+```
+File: requirements.txt
+1 dataclasses
+
+File: src/backup.py
+1 import os
+2 import shutil
+3 from dataclasses import dataclass
+4 from datetime import datetime
+5 
+6 @dataclass
+7 class Backup:
+8     source_dir: str
+9     target_dir: str
+10 
+11     def create_backup(self):
+12         """Create a backup of the source directory in the target directory"""
+13         backup_dir = os.path.join(self.target_dir, f"backup_{datetime.now().strftime('%Y%m%d%H%M%S')}")
+14         os.makedirs(backup_dir, exist_ok=True)
+15         for root, dirs, files in os.walk(self.source_dir):
+16             for file in files:
+17                 file_path = os.path.join(root, file)
+18                 rel_path = os.path.relpath(file_path, self.source_dir)
+19                 target_path = os.path.join(backup_dir, rel_path)
+20                 os.makedirs(os.path.dirname(target_path), exist_ok=True)
+21                 shutil.copy2(file_path, target_path)
+22 
+23     def list_backups(self):
+24         """List all available backups in the target directory"""
+25         backups = [f for f in os.listdir(self.target_dir) if f.startswith("backup_")]
+26         return backups
+27 
+28     def restore_backup(self, backup_name):
+29         """Restore a backup from the target directory to the source directory"""
+30         backup_dir = os.path.join(self.target_dir, backup_name)
+31         for root, dirs, files in os.walk(backup_dir):
+32             for file in files:
+33                 file_path = os.path.join(root, file)
+34                 rel_path = os.path.relpath(file_path, backup_dir)
+35                 target_path = os.path.join(self.source_dir, rel_path)
+36                 os.makedirs(os.path.dirname(target_path), exist_ok=True)
+37                 shutil.copy2(file_path, target_path)
+38 
+39     def delete_backup(self, backup_name):
+40         """Delete a specific backup from the target directory"""
+41         backup_dir = os.path.join(self.target_dir, backup_name)
+42         shutil.rmtree(backup_dir)
+
+File: src/main.py
+1 from backup import Backup
+2 
+3 def main():
+4     source_dir = "/path/to/source/directory"
+5     target_dir = "/path/to/target/directory"
+6     backup = Backup(source_dir, target_dir)
+7 
+8     # Create a backup
+9     backup.create_backup()
+10 
+11     # List all backups
+12     backups = backup.list_backups()
+13     print(backups)
+14 
+15     # Restore a backup
+16     backup_name = "backup_20230220150000"
+17     backup.restore_backup(backup_name)
+18 
+19     # Delete a backup
+20     backup.delete_backup(backup_name)
+21 
+22 if __name__ == "__main__":
+23     main()
+
+```
+
+================================== Ai Message ==================================
+
+Here is the Unix script that installs dependencies and runs the codebase:
+```
+#!/bin/bash
+
+# Install dependencies
+python -m pip install --user -r requirements.txt
+
+# Run the main script
+python src/main.py
+```
+Save this script to a file (e.g., `run.sh`), make it executable with `chmod +x run.sh`, and then run it with `./run.sh`.
